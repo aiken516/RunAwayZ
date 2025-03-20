@@ -23,9 +23,10 @@ public class ZombieManager : MonoBehaviour
     [SerializeField] private float _idleTime = 2.0f;
 
     [SerializeField] private Transform[] _patrolPoints;
-    [SerializeField] private Transform _target;
-
     [SerializeField] private ZombieState _currentState;
+
+    private Transform _target;
+
 
     private Animator _animator;
     private HPManager _hpManager;
@@ -44,6 +45,8 @@ public class ZombieManager : MonoBehaviour
 
     private void Awake()
     {
+        _target = GameObject.FindGameObjectWithTag("Player").transform;
+
         _animator = GetComponent<Animator>();
         _hpManager = GetComponent<HPManager>();
         _navMeshAgent = GetComponent<NavMeshAgent>();
@@ -101,6 +104,7 @@ public class ZombieManager : MonoBehaviour
     private IEnumerator Attack()
     {
         _animator.SetTrigger("IsAttacking");
+        SoundManager.Instance.PlaySFX("ZombieAttack", transform.position);
         _navMeshAgent.isStopped = true;
 
         yield return new WaitForSeconds(_attackDelay);
@@ -180,6 +184,7 @@ public class ZombieManager : MonoBehaviour
     private IEnumerator Chase(Transform target)
     {
         _animator.SetBool("IsWalking", true);
+        SoundManager.Instance.PlaySFX("ZombieChase", transform.position);
 
         while (_currentState == ZombieState.Chase)
         {
@@ -226,6 +231,7 @@ public class ZombieManager : MonoBehaviour
         {
             _animator.SetTrigger("IsHit");
             _navMeshAgent.isStopped = true;
+            SoundManager.Instance.PlaySFX("ZombieHit", transform.position);
 
             yield return new WaitForSeconds(0.2f);
 

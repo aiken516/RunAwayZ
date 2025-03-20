@@ -24,16 +24,6 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float _walkSpeed = 2.0f;
     [SerializeField] private float _runSpeed = 4.0f;
 
-
-    // -- 임시 --
-    [SerializeField] private AudioClip _fireAudioClip;
-    [SerializeField] private AudioClip _weaponChangeAudioClip;
-    [SerializeField] private AudioClip _itemPickingAudioClip;
-    [SerializeField] private AudioClip _damageAudioClip;
-    private AudioSource _audioSource;
-    //[SerializeField] private GameObject _gunObject;
-    // ----------
-
     private float _currentDistance;
     private float _tartgetDistance;
     private float _targetFov;
@@ -87,9 +77,6 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Transform _aimTarget;
     //[SerializeField] private RigBuilder _rigBuilder;
 
-    private float _animationSpeed = 1.0f;
-    private string _currentAnimation = "Idle";
-
     private PlayerAnimation _playerAnimation;
 
     public bool IsRunning => _isRunning;
@@ -109,7 +96,6 @@ public class PlayerManager : MonoBehaviour
         _targetFov = _defaultFov;
         _mainCamera = _cameraTransform.GetComponent<Camera>();
         _mainCamera.fieldOfView = _defaultFov;
-        _audioSource = GetComponent<AudioSource>();
 
         _flashLight.SetActive(false);
         _playerAnimation = GetComponent<PlayerAnimation>();
@@ -182,8 +168,7 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1) && _hasGun)
         {
-            _playerAnimation.WeaponPullOut();
-            _isCurrentWeaponGun = true;
+            _playerAnimation.WeaponPullOut(() => { _isCurrentWeaponGun = true; });
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
@@ -292,7 +277,7 @@ public class PlayerManager : MonoBehaviour
 
         if (hits.Length != 0)
         {
-            PlayItemPickingAudio();
+            SoundManager.Instance.PlaySFX("GetItem", transform.position);
         }
     }
 
@@ -351,7 +336,7 @@ public class PlayerManager : MonoBehaviour
                                 {
                                     zombie.GetDamage(10);
                                     ParticleSystem particle = Instantiate(_damageParticle, hits[i].point, Quaternion.identity);
-                                    _audioSource.PlayOneShot(_damageAudioClip);
+                                    SoundManager.Instance.PlaySFX("Hit", hits[i].point);
                                 }
                             }
                         }
@@ -410,7 +395,7 @@ public class PlayerManager : MonoBehaviour
     public void AnimationEventUseWeapon()
     {
         _gunParticle.Play();
-        PlayFireAudio();
+        SoundManager.Instance.PlaySFX("Fire", transform.position);
     }
 
     // ------------ Camera 관련 -------------
@@ -542,28 +527,6 @@ public class PlayerManager : MonoBehaviour
         }
 
         _mainCamera.fieldOfView = targetFov;
-    }
-
-    // -------------- Audio 관련 ------------------
-
-    public void PlayWeaponChangeAudio()
-    {
-        _audioSource.PlayOneShot(_weaponChangeAudioClip);
-    }
-
-    public void PlayFireAudio()
-    {
-        _audioSource.PlayOneShot(_fireAudioClip);
-    }
-
-    public void PlayItemPickingAudio()
-    {
-        _audioSource.PlayOneShot(_itemPickingAudioClip);
-    }
-
-    public void PlayFootstepAudio()
-    { 
-    
     }
 
     private void DebugBox(Vector3 origin, Vector3 direction)

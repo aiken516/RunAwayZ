@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
@@ -45,12 +46,34 @@ public class PlayerAnimation : MonoBehaviour
         _animator.SetFloat("Vertical", _player.VerticalMove);
     }
 
-    public void WeaponPullOut()
+    public void WeaponPullOut(Action onActionEnd)
     {
         _animator.SetLayerWeight(1, 0);
         _actionLayerCoroutine = StartCoroutine(FadeLayerWeight(2, 1, 0.2f));
         _animator.SetTrigger("IsWeaponPullOut");
+        GameManager.Instance.PlayAfterCoroutine(() =>
+        {
+            if (_actionLayerCoroutine != null)
+            {
+                StopCoroutine(_actionLayerCoroutine);
+            }
+
+            onActionEnd?.Invoke();
+            _actionLayerCoroutine = StartCoroutine(FadeLayerWeight(2, 0, 0.2f));
+        }, 2.3f);
+    }
+
+    public void AnimationWeaponPullOutEvent()
+    {
         _gunObject.SetActive(true);
+        SoundManager.Instance.PlaySFX("ChangeWeapon", transform.position);
+    }
+
+    public void WeaponPutAway()
+    {
+        _animator.SetLayerWeight(1, 0);
+        _actionLayerCoroutine = StartCoroutine(FadeLayerWeight(2, 1, 0.2f));
+        _animator.SetTrigger("IsWeaponPutAway");
         GameManager.Instance.PlayAfterCoroutine(() =>
         {
             if (_actionLayerCoroutine != null)
@@ -62,21 +85,10 @@ public class PlayerAnimation : MonoBehaviour
         }, 2.3f);
     }
 
-    public void WeaponPutAway()
+    public void AnimationWeaponPutAwayEvent()
     {
-        _animator.SetLayerWeight(1, 0);
-        _actionLayerCoroutine = StartCoroutine(FadeLayerWeight(2, 1, 0.2f));
-        _animator.SetTrigger("IsWeaponPutAway");
         _gunObject.SetActive(false);
-        GameManager.Instance.PlayAfterCoroutine(() =>
-        {
-            if (_actionLayerCoroutine != null)
-            {
-                StopCoroutine(_actionLayerCoroutine);
-            }
-
-            _actionLayerCoroutine = StartCoroutine(FadeLayerWeight(2, 0, 0.2f));
-        }, 2.3f);
+        SoundManager.Instance.PlaySFX("ChangeWeapon", transform.position);
     }
 
     public void GetItem()
