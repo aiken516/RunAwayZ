@@ -17,9 +17,13 @@ public class StageManager : TSingleton<StageManager>
     [SerializeField] private GameObject _roadPrefab;
     [SerializeField] private GameObject _roadBendRightPrefab;
     [SerializeField] private GameObject _roadBendLeftPrefab;
+    [SerializeField] private GameObject _zombiePlacementPrefab;
+    [SerializeField] private GameObject _zombiePlacementRightPrefab;
+    [SerializeField] private GameObject _zombiePlacementLeftPrefab;
 
     [SerializeField] private Transform _stageObjectParent;
     [SerializeField] private Transform _roadParent;
+    [SerializeField] private Transform _zombiePlacementParent;
 
     [SerializeField] private List<GameObject> _stageObjectPool;
     [SerializeField] private List<GameObject> _stageBendRightObjectPool;
@@ -29,9 +33,9 @@ public class StageManager : TSingleton<StageManager>
     [SerializeField] private List<GameObject> _roadBendRightObjectPool;
     [SerializeField] private List<GameObject> _roadBendLeftObjectPool;
 
+    private Dictionary<Vector3, (Road, GameObject)> _roadDict = new();
 
     private StageType _prevStage = StageType.Straight;//두 번 중 한 번은 꺾도록
-
     private StageType _prevBendStage = StageType.Straight;//두 번 꺾어서 원이 되지 않도록 관리
 
     [SerializeField] private Transform _startStageGeneratePoint;
@@ -67,14 +71,33 @@ public class StageManager : TSingleton<StageManager>
         GameObject stageObject = GetStageFromPool(stageType);
         stageObject.SetActive(true);
         stageObject.transform.SetPositionAndRotation(_nextStageGeneratePoint.position, _nextStageGeneratePoint.rotation);
-        
+
         GameObject roadObject = GetRoadFromPool(stageType);
         roadObject.SetActive(true);
         roadObject.transform.SetPositionAndRotation(_nextStageGeneratePoint.position, _nextStageGeneratePoint.rotation);
         Road road = roadObject.GetComponent<Road>();
 
+        _roadDict.Add(_nextStageGeneratePoint.position, (road, roadObject));
+
+        GameObject zombiePlacementObject;
+
+        if (stageType == StageType.Straight)
+        {
+            zombiePlacementObject = Instantiate(_zombiePlacementPrefab, _zombiePlacementParent);
+        }
+        else if (stageType == StageType.Right)
+        {
+            zombiePlacementObject = Instantiate(_zombiePlacementRightPrefab, _zombiePlacementParent);
+        }
+        else
+        {
+            zombiePlacementObject = Instantiate(_zombiePlacementLeftPrefab, _zombiePlacementParent);
+        }
+
+        zombiePlacementObject.transform.SetPositionAndRotation(_nextStageGeneratePoint.position, _nextStageGeneratePoint.rotation);
+
+        Debug.Log($"NextStagePoint : {road.NextStagePoint.position}");
         _nextStageGeneratePoint = road.NextStagePoint;
-        Debug.Log(_nextStageGeneratePoint.position);
 
         return true;
     }

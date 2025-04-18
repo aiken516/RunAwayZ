@@ -3,31 +3,30 @@ using UnityEngine.Events;
 
 public class HPManager : MonoBehaviour
 {
+    [SerializeField] public UnityEvent DeadEvent = new UnityEvent();
     [SerializeField] private float _maxHP;
-    private float _currentHP = 0.0f;
-    
+    [SerializeReference] private float _currentHP;
+
     public float MaxHP => _maxHP;
     public float CurrentHP => _currentHP;
 
-    public UnityEvent DeadEvent;
-
-    private void Start()
+    private void Awake()
     {
         _currentHP = _maxHP;
     }
 
     public void ChangeHP(float changeAmount)
     {
-        _currentHP += changeAmount;
-        if (_currentHP > _maxHP)
+        _currentHP = Mathf.Clamp(_currentHP + changeAmount, 0.0f, _maxHP);
+
+        if (_currentHP <= 0.0f)
         {
-            _currentHP = _maxHP;
-        }
-        else if (_currentHP <= 0.0f)
-        {
-            DeadEvent.Invoke();
+            DeadEvent?.Invoke();
         }
 
-        Debug.Log($"{gameObject.name} HP Change : {changeAmount}, Current HP : {_currentHP}");
+        if (gameObject.name != "Player")
+        {
+            Debug.Log($"{gameObject.name} HP Change : {changeAmount}, Current HP : {_currentHP}");
+        }
     }
 }

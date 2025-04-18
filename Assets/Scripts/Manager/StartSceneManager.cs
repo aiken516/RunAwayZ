@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,7 +20,18 @@ public class StartSceneManager : MonoBehaviour
 
     private void ChangeScene()
     {
-        SceneManager.LoadScene("TutorialScene");
+        StartCoroutine(LoadSceneCoroutine("TutorialScene", 3.0f));
+        //SceneManager.LoadScene("TutorialScene");
+    }
+
+    private IEnumerator LoadSceneCoroutine(string sceneName, float delayTime)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+        asyncLoad.allowSceneActivation = false;
+
+        yield return new WaitForSeconds(delayTime);
+
+        asyncLoad.allowSceneActivation = true;
     }
 
     public void OnClickExitButton()
